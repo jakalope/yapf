@@ -123,32 +123,37 @@ def FormatCode(unformatted_source,
   style.SetGlobalStyle(style.CreateStyleFromConfig(style_config))
   if not unformatted_source.endswith('\n'):
     unformatted_source += '\n'
-  tree = pytree_utils.ParseCodeToTree(unformatted_source)
 
-  # Run passes on the tree, modifying it in place.
-  comment_splicer.SpliceComments(tree)
-  continuation_splicer.SpliceContinuations(tree)
-  subtype_assigner.AssignSubtypes(tree)
-  split_penalty.ComputeSplitPenalties(tree)
-  blank_line_calculator.CalculateBlankLines(tree)
+  try:
+    tree = pytree_utils.ParseCodeToTree(unformatted_source)
 
-  uwlines = pytree_unwrapper.UnwrapPyTree(tree)
-  for uwl in uwlines:
-    uwl.CalculateFormattingInformation()
+    # Run passes on the tree, modifying it in place.
+    comment_splicer.SpliceComments(tree)
+    continuation_splicer.SpliceContinuations(tree)
+    subtype_assigner.AssignSubtypes(tree)
+    split_penalty.ComputeSplitPenalties(tree)
+    blank_line_calculator.CalculateBlankLines(tree)
 
-  _MarkLinesToFormat(uwlines, lines)
-  reformatted_source = reformatter.Reformat(uwlines, verify)
+    uwlines = pytree_unwrapper.UnwrapPyTree(tree)
+    for uwl in uwlines:
+      uwl.CalculateFormattingInformation()
 
-  if unformatted_source == reformatted_source:
-    return '' if print_diff else reformatted_source, False
+    _MarkLinesToFormat(uwlines, lines)
+    reformatted_source = reformatter.Reformat(uwlines, verify)
 
-  code_diff = _GetUnifiedDiff(
-      unformatted_source, reformatted_source, filename=filename)
+    if unformatted_source == reformatted_source:
+      return '' if print_diff else reformatted_source, False
 
-  if print_diff:
-    return code_diff, code_diff != ''
+    code_diff = _GetUnifiedDiff(
+        unformatted_source, reformatted_source, filename=filename)
 
-  return reformatted_source, True
+    if print_diff:
+      return code_diff, code_diff != ''
+
+    return reformatted_source, True
+
+  finally:
+    return '' if print_diff else unformatted_source, False
 
 
 def _CheckPythonVersion():  # pragma: no cover
