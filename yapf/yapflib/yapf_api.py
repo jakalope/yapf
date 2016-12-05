@@ -141,19 +141,19 @@ def FormatCode(unformatted_source,
     _MarkLinesToFormat(uwlines, lines)
     reformatted_source = reformatter.Reformat(uwlines, verify)
 
-    if unformatted_source == reformatted_source:
-      return '' if print_diff else reformatted_source, False
+  except:
+    reformatted_source = str(unformatted_source)
 
-    code_diff = _GetUnifiedDiff(
-        unformatted_source, reformatted_source, filename=filename)
+  if unformatted_source == reformatted_source:
+    return '' if print_diff else reformatted_source, False
 
-    if print_diff:
-      return code_diff, code_diff != ''
+  code_diff = _GetUnifiedDiff(
+      unformatted_source, reformatted_source, filename=filename)
 
-    return reformatted_source, True
+  if print_diff:
+    return code_diff, code_diff != ''
 
-  finally:
-    return '' if print_diff else unformatted_source, False
+  return reformatted_source, True
 
 
 def _CheckPythonVersion():  # pragma: no cover
